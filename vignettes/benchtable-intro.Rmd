@@ -1,0 +1,210 @@
+---
+title: "A Tutorial for  the Package benchtable"
+author: Venelin Mitov
+output:
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+    keep_tex: true
+---
+
+```{r setup, include=F}
+# this apparently doesn't have an effect:
+# to set the global option width execute the following :
+# options(knitr.package.width=120) 
+# render('benchtable-intro.Rmd', output_format='pdf_document')
+#library(knitr)
+#opts_chunk$set(size='tiny', out.extra='style="display:block; margin: auto;"', fig.align="center")
+#opts_knit$set(width=120)
+```
+
+
+
+# Introduction
+The **benchtable** package provides an easy way to handle computational tasks on varying sets of parameters and input data. It's goals are:  
+
+* to set a standard for storing input parameters and data together with results in one table:  
+    + every column of the table corresponds to an input parameter or an input object such as a phylogeny or an output object such as a an lm-fit.  
+    + every row corresponds to a different combination of input parameters, data and results.  
+    + this table is a [data.table](http://cran.r-project.org/web/packages/data.table/index.html) object. A `data.table` can be regarded as an improved `data.frame` providing suitable syntax for selecting specific rows, applying operations on columns as well as grouping and summarising rows by some of the columns.  
+* to help you with the execution of a given computational task on some (all) of the rows in the table.  
+    + all you will be doing is writing functions that do the computation on one row and call the `benchmark()` function from the interactive R-console or `genBenchJobs()` for running your tasks in parallel.  
+    + While this is very similar to calling the `apply()` function on rows, it also does handling of errors, measuring execution time and storing the results as a column in the table.  
+* to assist you in the process of running parallel computational tasks by generating shell scripts for job-submission:  
+    + all you will be doing is calling `genBenchJobs()` to generate a shell script, use rsync to transfer the script and the data to the cluster and call the script on the cluster.  
+    + you will indicate where to run the jobs (brutus cluster, new bsse-cluster or your local shell) simply by specifying the argument `type` in the call to `genBenchJobs()`. This means that you will no more need to remember the syntax of the bsub and qsub commands.  
+* to assist you in the process of collecting the results of your parallel jobs:  
+    + all you will be doing after completion of your parallel jobs is rsync-ing the resulting `.RData` files from your directory on the cluster into a local directory, than call the `collectBenchRes()` function to store the results as new columns in the table.  
+* to provide some basic analysis and plot functions for comparing the results obtained on different rows in the table.  
+* to provide some syntactic shortcuts that shorten your code (this is yet experimental and I don't know if this makes the code more readable...)  
+
+
+# Example 1. Calling the `benchmark()`  function
+
+I wrote the function `benchmark()` benchmark before even thinking about wrapping everything in a package. Think of it as of calling `apply()` on the rows of a table with some error handling, i.e. wrapping your code in a call to `try()`. For more information type `?benchmark()`.
+
+## Creating some input parameters and data
+Let's create a data.table with various parameters as columns:
+```{r parameters}
+library(benchtable)
+set.seed(1)
+# Only requirement for your data.table: have an integer column called id with unique numbers.
+dt <- data.table(id=1:120, N=c(rep(10, 60), rep(100, 60)), A=rep(0.5, 120), B=rep(0.8, 120), 
+                 Epsilon=c(rep(0.1, 30), rep(0.2, 30), rep(0.1, 30), rep(0.2, 30)))
+# Good practice: specify the column 'id' as a key-column in dt.
+setkey(dt, id)
+```
+
+Generate some input data:
+```{r data}
+gen.x <- function(p) {
+  round(runif(n=p[['N']]), digits=1)
+}
+# execute gen.x for every row p of dt and store the result in a column called 'x'
+dt <- benchmark(gen.x, dt, fname='x') 
+
+gen.y <- function(p) {
+  p[['A']]+p[['x']]*p[['B']]+rnorm(p[['N']], sd=p[['Epsilon']])
+}
+# execute gen.y for every row p of dt and store the result in a column called 'y'
+dt <- benchmark(gen.y, dt, fname='y')
+```
+
+
+```{r print1, size='footnotesize'}
+print(dt, digits=1)
+```
+
+
+There's only one requirement for your data.table, namely, to have an integer column called id. These id-numbers are unique for each line and are used when executing tasks and collecting results.
+
+Now that we have our data, we can fit some model to it:
+```{r lmFit}
+# save this to a file lmFit.R 
+lmFit <- function(p, ...) {
+  lm(y~x, p[c('y', 'x')], ...)
+}
+```
+
+We save the above function to a file 'lmFit.R' as, later on, we are going to run it in parallel on the cluster. 
+
+Now we call `benchmark()`:
+```{r }
+dt <- benchmark(lmFit, dt)
+print(dt, digits=1)
+```
+
+## Quick analysis
+We can use the grouping functionality of the class [data.table](http://cran.r-project.org/web/packages/data.table/index.html) to do some quick analysis:
+```{r mean}
+dt[, list(meanBHat={BHat <- sapply(lmFit, 
+                                   function(fit) {
+                                     if(is.list(fit)) 
+                                       coef(fit)[2] 
+                                     else NA
+                                   })
+                    mean(BHat, na.rm=T)},
+          sdBHat=sd(BHat, na.rm=T)), 
+   by=list(Epsilon, N)]
+```
+
+At first glance, the above example might be looking a bit complicated, so let me explain: dt[i, j, by=list(col1, col2)] returns another data.table object that represents the evaluation of expression j on the rows indexed by i, after grouping them according to columns col1 and col2. In the example, we selected all rows by omitting i, grouped them by the columns N and Epsilon and for every group we found the mean and standard deviation of the estimated linear regression slope. If you are not familiar with the data.table class, keep in mind that every column name mentioned in the j expression refers to a list or a vector with the elements in the column. Therefore we call sapply to obtain a vector of all regression slopes in the group. For more help on this, I recommend reading the package vignettes accessible from the main help-page `?data.table`. 
+
+In the example above I've written `if(is.list(fit))...` because this is the easiest way to check whether the call to `lm` was successful and returned a fit object. In case of an error, the returned object would be of class `try-error`. If you are confident that there are no errors you can safely omit the `if-else` statement. 
+
+# Example 2. Executing benchmarks on a cluster
+
+Now, let's get to the point of the **benchtable** package. Typically we wish to run our computations in parallel on a cluster such as brutus. Ideally, this should be as simple as running everything on the local computer. In practice, often much more effort is needed because one has to install the same packages on the cluster, copy one's code and data to and back from the cluster and learn the cluster-specific command-line tools for manipulating parallel jobs. The following example is based on the **benchtable** functions `genBenchJobs()` and `collectBenchRes()` and the command line-tool `rsync`. 
+
+```{r brutus, results='hide'}
+# save the data in the current directory
+save(dt, file='dt.RData')
+
+# generate an R-script for benchmark execution, j_lmFit.R, 
+# and a shell script for job-submission, j_bsub_lmFit.sh:
+genBenchJobs(lmFit, table.file='dt.RData', ids=dt[, id], perJob=10, 
+             type='bsub', sources='lmFit.R')
+```
+
+In the call to `genBenchJobs()` we specified that we want to execute the function `lmFit()` on all id's in the data.table object found in the file 'dt.RData'. We also specified that we would like to have each parallel job executed the function on 10 rows and run the jobs on the brutus server. 
+We could as well have specified needed R-packages and R-source files in the call to `genBenchJobs()`. Additional arguments are explained in the help `?genBenchJobs`. 
+You can verify that an R-script and a shell script have been generated in the local directory. 
+
+Now, time to copy everything needed to the cluster:
+```{r copy, eval=F}
+# move the scripts and the data on the brutus cluster 
+system('rsync -vc lmFit.R vmitov@brutus:~')
+system('rsync -vc j_* vmitov@brutus:~')
+system('rsync -vc dt.RData vmitov@brutus:~')
+
+```
+
+Now, go to the cluster and run the shell-script:
+```
+[vmitov@brutus4 ~]$ sh j_bsub_lmFit.sh 
+Generic job.
+Job <75543729> is submitted to queue <pub.8h>.
+Generic job.
+...
+```
+
+After completing the jobs, we copy the results from the cluster in the local directory. There is one resulting data-file for each job:
+```{r results, eval=F}
+# use the --remove-source-files to automatically clean-up the data from the cluster
+system('rsync -vc --remove-source-files vmitov@brutus:~/job_*.RData .')
+```
+
+Then it remains to collect the results into the data.table:
+
+```{r collect}
+dt <- collectBenchRes('lmFit', dt, dir.res='.')
+```
+So that's it. The warning was issued because we already had a column 'lmFit' in the dt table. 
+
+*Note* that the current implementation of `collectBenchRes()` relies on the `find` command which is not available on windows. That is why it only works on unix and mac-os based systems. A work-around in case you are using windows on your local machine would be to do the result-collection on the cluster and transfer the data.table file on your windows machine. In future versions I may implement an alternative approach for windows. 
+
+
+Skipping the output, here's all the code for running the tasks in parallel:
+```{r parallel, eval=F}
+save(dt, file='dt.RData')
+
+# generate an R-script for benchmark execution, j_lmFit.R, 
+# and a shell script for job-submission, j_bsub_lmFit.sh:
+genBenchJobs(lmFit, table.file='dt.RData', ids=dt[, id], perJob=10, 
+             type='bsub', sources='lmFit.R')
+
+# move the scripts and the data on the brutus cluster 
+system('rsync -vc lmFit.R vmitov@brutus:~')
+system('rsync -vc j_* vmitov@brutus:~')
+system('rsync -vc dt.RData vmitov@brutus:~')
+
+# after executing on brutus
+system('rsync -vc --remove-source-files vmitov@brutus:~/job_*.RData .')
+dt <- collectBenchRes('lmFit', dt, dir.res='.')
+```
+
+# Some syntactic sugar
+Finally, I want to mention some handy tools that I'm currently wrapping in the package, though at a later stage I might decide to remove them or put them in another package. 
+One thing that has always annoyed me about R is the syntax of the apply-functions. Everytime you call apply or sapply or lapply, you have to define a function for the sake of giving a name to the element of the array you will be operating on. In some cases, particularly, when the body of the function comprises just a short expression, it might be much prettier if you could directly type the expression. Therefore I defined a couple of shortcut-function to sapply, and lapply, assuming that the element name is '.'. Using this syntactic "sugar", the above example can be written as:
+
+```{r sugar}
+dt[, list(meanBHat={BHat <- s.(lmFit, if(is.list(.)) coef(.)[2] else NA)
+                    mean(BHat, na.rm=T)},
+          sdBHat=sd(BHat, na.rm=T)), 
+   by=list(N, Epsilon)]
+```
+
+This was a way shorter but keep in mind that it is yet experimental, and I haven't tested it on very long lists. You can call '?s.' for more information on this. 
+
+# Installing the package
+In the future this package will be available on our group GIT server, yet for the moment it is available in our group-directory under
+[smb://bs-filesvr01/stadler/Projects/Venelin](smb://bs-filesvr01/stadler/Projects/Venelin)
+To install the package, copy the directory 'benchtable' locally and type the following command in the R-console:
+```{r install, eval=F}
+install.packages('benchtable', type='source', repos=NULL)
+```
+You should also install the package in your local R library on the cluster. 
+
+# Further information and help
+For further information, look in the package help-pages. If you cannot find the answer, please write me to venelin.mitov@bsse.ethz.ch. 
