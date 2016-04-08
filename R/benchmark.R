@@ -340,8 +340,8 @@ collectBenchRes <- function(fs, benchdata=NULL, table.file=NULL, ids=NULL,
     cs <- match(fs, names(benchdata))
     cs <- cs[!is.na(cs)]
     if(length(cs)) {
-      warning(paste('The column(s)', toString(names(benchdata)[cs]), 'will be overwritten.'))
-      benchdata <- benchdata[, -cs, with=F]
+      warning(paste('Matching entries in column(s)', toString(names(benchdata)[cs]), 'will be overwritten.'))
+      #benchdata <- benchdata[, -cs, with=F]
     }
   }
   for(f in fs) {
@@ -392,8 +392,16 @@ collectBenchRes <- function(fs, benchdata=NULL, table.file=NULL, ids=NULL,
     if(is.null(benchdata)) {
       benchdata <- benchd[, list(id, eval(parse(text=fname)))]
     } else {
-      benchdata <- merge(benchdata, benchd[, list(id, eval(parse(text=fname)))],
-                         all=T, by='id')
+      if(key(benchdata)!='id') {
+        warning('Setting key in supplied data.table to id.')
+        setkey(benchdata, id)
+      }
+      if(nrow(benchd)==1) {
+        benchdata[benchd, eval(parse(text=paste0(fname, ':=list(i.', fname,')')))]  
+      } else {
+        benchdata[benchd, eval(parse(text=paste0(fname, ':=i.', fname)))]
+      }
+      
     }
   }
 
