@@ -23,8 +23,8 @@ l. <- function(l, expr) {
 }
 
 #' Construct a data.frame from its arguments and evaluate expression on every row
-#' @param l1, l2, ... two or more vector or list objects. A data.frame is constructed from these
-#' by data.frame(l1, l2, ...).
+#' @param l1,l2,... two or more vector or list objects. A data.frame is constructed
+#'  from these by `data.frame(l1, l2, ...)`.
 #' @param expr any R expression that is evaluated on every row, ., of the data.frame.
 #' @return eval(substitute(apply(dt, 1, function(.) expr)))
 #' @export 
@@ -42,10 +42,10 @@ ll. <- function(l1=NULL, l2=NULL, expr, ...) {
 }
 
 #' Construct a data.frame from its arguments and evaluate expression on every row
-#' @param l1, l2, ... two or more vector or list objects. A data.frame is constructed from these
-#' by data.frame(l1, l2, ...).
+#' @param l1,l2,... two or more vector or list objects. A data.frame is constructed
+#'  from these `by data.frame(l1, l2, ...)`.
 #' @param expr any R expression that is evaluated on every row, ., of the data.frame.
-#' @return eval(substitute(alply(dt, 1, function(.) expr)))
+#' @return `eval(substitute(alply(dt, 1, function(.) expr)))``
 #' @export 
 lll. <- function(l1=NULL, l2=NULL, expr, ...) {
   if(is.null(l1) & is.null(l2)) 

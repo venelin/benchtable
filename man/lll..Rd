@@ -7,13 +7,13 @@
 lll.(l1 = NULL, l2 = NULL, expr, ...)
 }
 \arguments{
-\item{l1, }{l2, ... two or more vector or list objects. A data.frame is constructed from these
-by data.frame(l1, l2, ...).}
+\item{l1, l2, ...}{two or more vector or list objects. A data.frame is constructed
+from these `by data.frame(l1, l2, ...)`.}
 
 \item{expr}{any R expression that is evaluated on every row, ., of the data.frame.}
 }
 \value{
-eval(substitute(alply(dt, 1, function(.) expr)))
+`eval(substitute(alply(dt, 1, function(.) expr)))``
 }
 \description{
 Construct a data.frame from its arguments and evaluate expression on every row

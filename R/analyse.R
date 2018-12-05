@@ -3,6 +3,7 @@
 #' @param filter a list of elements with modes corresponding to the first key-columns of
 #' benchdata
 #' @param what a function(row) returning a list of statistics for a row of benchdata
+#' @param ... additional arguments passed to apply
 #' @export
 analyseBenchData <- function(benchdata, filter, what, ...) {
   t(apply(benchdata[filter], 1, what, ...))

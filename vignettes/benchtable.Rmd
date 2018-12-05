@@ -30,7 +30,7 @@ The **benchtable** package provides an easy way to handle computational tasks on
 * to set a standard for storing input parameters and data together with results in one table:  
     + every column of the table corresponds to an input parameter or an input object such as a phylogeny or an output object such as a an lm-fit.  
     + every row corresponds to a different combination of input parameters, data and results.  
-    + this table is a [data.table](http://cran.r-project.org/web/packages/data.table/index.html) object. A `data.table` can be regarded as an improved `data.frame` providing suitable syntax for selecting specific rows, applying operations on columns as well as grouping and summarising rows by some of the columns.  
+    + this table is a [data.table](https://cran.r-project.org/package=data.table) object. A `data.table` can be regarded as an improved `data.frame` providing suitable syntax for selecting specific rows, applying operations on columns as well as grouping and summarising rows by some of the columns.  
 * to help you with the execution of a given computational task on some (all) of the rows in the table.  
     + all you will be doing is writing functions that do the computation on one row and call the `benchmark()` function from the interactive R-console or `genBenchJobs()` for running your tasks in parallel.  
     + While this is very similar to calling the `apply()` function on rows, it also does handling of errors, measuring execution time and storing the results as a column in the table.  
@@ -39,13 +39,13 @@ The **benchtable** package provides an easy way to handle computational tasks on
     + you will indicate where to run the jobs (brutus cluster, new bsse-cluster or your local shell) simply by specifying the argument `type` in the call to `genBenchJobs()`. This means that you will no more need to remember the syntax of the bsub and qsub commands.  
 * to assist you in the process of collecting the results of your parallel jobs:  
     + all you will be doing after completion of your parallel jobs is rsync-ing the resulting `.RData` files from your directory on the cluster into a local directory, than call the `collectBenchRes()` function to store the results as new columns in the table.  
-* to provide some basic analysis and plot functions for comparing the results obtained on different rows in the table.  
+* to provide some basic analysis functions for comparing the results obtained on different rows in the table.  
 * to provide some syntactic shortcuts that shorten your code (this is yet experimental and I don't know if this makes the code more readable...)  
 
 
 # Example 1. Calling the `benchmark()`  function
 
-I wrote the function `benchmark()` benchmark before even thinking about wrapping everything in a package. Think of it as of calling `apply()` on the rows of a table with some error handling, i.e. wrapping your code in a call to `try()`. For more information type `?benchmark()`.
+I wrote the function `benchmark()` benchmark before even thinking about wrapping everything in a package. Think of it as of calling `apply()` on the rows of a table with some error handling, i.e. wrapping your code in a call to `try()`. For more information type `?benchmark`.
 
 ## Creating some input parameters and data
 Let's create a data.table with various parameters as columns:
@@ -66,7 +66,10 @@ gen.x <- function(p) {
 }
 # execute gen.x for every row p of dt and store the result in a column called 'x'
 dt <- benchmark(gen.x, dt, fname='x') 
+```
 
+Execute a function on each row of the data
+```{r}
 gen.y <- function(p) {
   p[['A']]+p[['x']]*p[['B']]+rnorm(p[['N']], sd=p[['Epsilon']])
 }
@@ -99,7 +102,7 @@ print(dt, digits=1)
 ```
 
 ## Quick analysis
-We can use the grouping functionality of the class [data.table](http://cran.r-project.org/web/packages/data.table/index.html) to do some quick analysis:
+We can use the grouping functionality of the class [data.table](https://cran.r-project.org/package=data.table) to do some quick analysis:
 ```{r mean}
 dt[, list(meanBHat={BHat <- sapply(lmFit, 
                                    function(fit) {
@@ -199,6 +202,3 @@ dt[, list(meanBHat={BHat <- s.(lmFit, if(is.list(.)) coef(.)[2] else NA)
 ```
 
 This was a way shorter but keep in mind that it is yet experimental, and I haven't tested it on very long lists. You can call '?s.' for more information on this. 
-
-# Further information and help
-For further information, look in the package reference.
