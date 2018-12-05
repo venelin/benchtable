@@ -1,10 +1,14 @@
 Package: benchtable
 Type: Package
 Title: Parallel benchmark on the lines of a data.table
-Version: 1.0
+Version: 1.0.0
 Date: 2014-06-12
 Author: Venelin Mitov
 Maintainer: <venelin.mitov@bsse.ethz.ch>
-Description: Executes a user-defined function on each line of a data.table splitting the job into multiple parallel R-processes which eventually are run on a cluster using the lsf (bsub) or qsub command.
-Depends: data.table,vioplot,plyr
+Description: Executes a user-defined function on each line of a data.table
+    splitting the job into multiple parallel R-processes which eventually are run on
+    a cluster using the lsf (bsub) or qsub command.
+Depends:
+    data.table,vioplot,plyr
 License: GPL (>= 2)
+RoxygenNote: 5.0.1
