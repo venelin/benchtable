@@ -1,0 +1,23 @@
+url: http://venelin.github.io/benchtable
+
+template:
+  params:
+    ganalytics: UA-129563006-5
+    
+navbar:
+  title: benchtable
+  type: default
+  left:
+  - icon: fa-home fa-lg
+    href: index.html
+  - text: Get started
+    href: articles/benchtable.html
+  - text: Reference
+    href: reference/index.html
+    
+articles:
+- title: All vignettes
+  desc: ~
+  contents:
+  - '`benchtable`'
+
