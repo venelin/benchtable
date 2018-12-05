@@ -24,6 +24,9 @@ generated scripts:}
 \item{table.file}{a character indicating the name of a .RData file containing
 a data.table object.}
 
+\item{table.name}{a character string indicating the name of the data.table
+variable found in `table.file`.}
+
 \item{ids}{a vector indicating a possible subset of the id-column of benchdata 
 on which to perform the benchmark. Defaults to NULL in which case all lines 
 are consiedered.}

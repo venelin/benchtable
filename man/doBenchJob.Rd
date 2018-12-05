@@ -6,6 +6,9 @@
 \usage{
 doBenchJob(fname, f, table.file, table.name, ids, ...)
 }
+\arguments{
+\item{fname, f, table.file, table.name, ids, ...}{internal usage (see code).}
+}
 \description{
 Extract command-line arguments specifying a call to benchmark.
 }

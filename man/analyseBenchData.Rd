@@ -13,6 +13,8 @@ analyseBenchData(benchdata, filter, what, ...)
 benchdata}
 
 \item{what}{a function(row) returning a list of statistics for a row of benchdata}
+
+\item{...}{additional arguments passed to apply}
 }
 \description{
 Apply the function what on all lines specified by filter in benchdata

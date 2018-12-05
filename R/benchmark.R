@@ -31,6 +31,10 @@ benchmark <- function(f, benchdata,
                       report=function(p, obj) {}, 
                       result.only = FALSE, id.result.only = FALSE, 
                       paramsEvalAtCall='', ...) {
+  
+  # declare global variables to avoid CRAN CHECK NOTES "no visible binding":
+  NAME <- NULL
+  
   if(!is.null(paramsEvalAtCall) & paramsEvalAtCall!='') {
     paramsEvalAtCall <- paste0('list(', paramsEvalAtCall, ')')
   }
@@ -105,9 +109,14 @@ benchmark <- function(f, benchdata,
 
 
 #' @title Extract command-line arguments specifying a call to benchmark. 
+#' @param fname,f,table.file,table.name,ids,... internal usage (see code).
 #' @note This is an internal function
 #' @export
 doBenchJob <- function(fname, f, table.file, table.name, ids, ...) {
+  
+  # declare global variables to avoid CRAN CHECK NOTES "no visible binding":
+  NAME <- id <- NULL
+  
   cat('Executing ', f, ' on ', table.file, 
       ', ids: ', do.call(paste, as.list(ids)), '\n', sep='')
   
@@ -153,6 +162,8 @@ doBenchJob <- function(fname, f, table.file, table.name, ids, ...) {
 #'    generated scripts: 
 #' @param table.file a character indicating the name of a .RData file containing
 #' a data.table object.
+#' @param table.name a character string indicating the name of the data.table
+#'  variable found in `table.file`.
 #' @param ids a vector indicating a possible subset of the id-column of benchdata 
 #' on which to perform the benchmark. Defaults to NULL in which case all lines 
 #' are consiedered.
@@ -209,6 +220,9 @@ genBenchJobs <- function(f, fname=NULL, script.file=fname,
                          bsub.other = "",
                          qsub.q='sc02.q', 
                          sleep.every=50, sleep.secs=300) {
+  
+  # declare global variables to avoid CRAN CHECK NOTES "no visible binding":
+  NAME <- id <- NULL
   
   jobCommand <- function(type, name='', 
                          bsub.W='', bsub.n='', bsub.mem='', bsub.other='', 
@@ -345,6 +359,10 @@ ids <- as.integer(args[-(1:3)])
 #' @export
 collectBenchRes <- function(fs, benchdata=NULL, table.file=NULL, ids=NULL,
                             res.ids.only=T, dir.res='.', write.file=F, verbose=F) {
+  
+  # declare global variables to avoid CRAN CHECK NOTES "no visible binding":
+  NAME <- id <- b <- NULL
+  
   if(is.null(benchdata) & !is.null(table.file)) {
     if(verbose) 
       cat('Loading file ', table.file, '...\n')
@@ -465,5 +483,8 @@ cleanBenchRes <- function(f) {
 #' @import data.table
 #' @export
 getLineAsList <- function(benchdata, i) {
+  # declare global variables to avoid CRAN CHECK NOTES "no visible binding":
+  id <- NULL
+  
   as.list(t(benchdata[id==i])[,1])
 }

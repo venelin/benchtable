@@ -12,7 +12,6 @@ Description: Executes a user-defined function on each line of a data.table
 Depends:
     data.table
 Suggests:
-    vioplot,
     knitr,
     rmarkdown
 License: GPL (>= 2)
