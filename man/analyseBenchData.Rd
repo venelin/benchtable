@@ -17,4 +17,3 @@ benchdata}
 \description{
 Apply the function what on all lines specified by filter in benchdata
 }
-

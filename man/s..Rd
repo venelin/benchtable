@@ -17,4 +17,3 @@ eval(substitute(sapply(ll, function(.) expr)), list(ll=l))
 \description{
 Shortcut for sapply(l, function(.) expr)
 }
-

@@ -15,4 +15,6 @@ getLineAsList(benchdata, i)
 a named list of objects found in the columns of benchdata at the 
   specified line.
 }
-
+\description{
+Get a list representing a line of a data.table
+}

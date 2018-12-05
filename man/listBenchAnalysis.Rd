@@ -20,4 +20,3 @@ mode of this vector should correspond to the mode of a key-column in benchdata}
 \description{
 Create a list of matrices with results from analyseBenchData as columns
 }
-

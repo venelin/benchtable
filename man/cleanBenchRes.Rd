@@ -9,4 +9,6 @@ cleanBenchRes(f)
 \arguments{
 \item{f}{name of the function or a function object}
 }
-
+\description{
+Clean result-files from a previous benchmark.
+}
