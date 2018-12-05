@@ -18,4 +18,3 @@ eval(substitute(apply(dt, 1, function(.) expr)))
 \description{
 Construct a data.frame from its arguments and evaluate expression on every row
 }
-

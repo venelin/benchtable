@@ -1,12 +1,15 @@
 ---
-title: "A Tutorial for  the Package benchtable"
+title: "A User Guide to the R-package 'benchtable'"
 author: Venelin Mitov
-output:
-  html_document:
+output: 
+  rmarkdown::html_vignette:
+    fig_caption: yes
     toc: true
-  pdf_document:
-    toc: true
-    keep_tex: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{A User Guide to the R-package 'benchtable'}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=F}
@@ -109,7 +112,7 @@ dt[, list(meanBHat={BHat <- sapply(lmFit,
    by=list(Epsilon, N)]
 ```
 
-At first glance, the above example might be looking a bit complicated, so let me explain: dt[i, j, by=list(col1, col2)] returns another data.table object that represents the evaluation of expression j on the rows indexed by i, after grouping them according to columns col1 and col2. In the example, we selected all rows by omitting i, grouped them by the columns N and Epsilon and for every group we found the mean and standard deviation of the estimated linear regression slope. If you are not familiar with the data.table class, keep in mind that every column name mentioned in the j expression refers to a list or a vector with the elements in the column. Therefore we call sapply to obtain a vector of all regression slopes in the group. For more help on this, I recommend reading the package vignettes accessible from the main help-page `?data.table`. 
+At first glance, the above example might be looking a bit complicated, so let me explain: `dt[i, j, by=list(col1, col2)]` returns another data.table object that represents the evaluation of expression j on the rows indexed by i, after grouping them according to columns col1 and col2. In the example, we selected all rows by omitting i, grouped them by the columns N and Epsilon and for every group we found the mean and standard deviation of the estimated linear regression slope. If you are not familiar with the data.table class, keep in mind that every column name mentioned in the j expression refers to a list or a vector with the elements in the column. Therefore we call sapply to obtain a vector of all regression slopes in the group. For more help on this, I recommend reading the package vignettes accessible from the main help-page `?data.table`. 
 
 In the example above I've written `if(is.list(fit))...` because this is the easiest way to check whether the call to `lm` was successful and returned a fit object. In case of an error, the returned object would be of class `try-error`. If you are confident that there are no errors you can safely omit the `if-else` statement. 
 
@@ -197,14 +200,5 @@ dt[, list(meanBHat={BHat <- s.(lmFit, if(is.list(.)) coef(.)[2] else NA)
 
 This was a way shorter but keep in mind that it is yet experimental, and I haven't tested it on very long lists. You can call '?s.' for more information on this. 
 
-# Installing the package
-In the future this package will be available on our group GIT server, yet for the moment it is available in our group-directory under
-[smb://bs-filesvr01/stadler/Projects/Venelin](smb://bs-filesvr01/stadler/Projects/Venelin)
-To install the package, copy the directory 'benchtable' locally and type the following command in the R-console:
-```{r install, eval=F}
-install.packages('benchtable', type='source', repos=NULL)
-```
-You should also install the package in your local R library on the cluster. 
-
 # Further information and help
-For further information, look in the package help-pages. If you cannot find the answer, please write me to venelin.mitov@bsse.ethz.ch. 
+For further information, look in the package reference.

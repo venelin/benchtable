@@ -6,11 +6,12 @@
 of its lines.}
 \usage{
 genBenchJobs(f, fname = NULL, script.file = fname, table.file,
-  table.name = "NULL", ids = NULL, params = "", paramsEvalAtCall = "",
-  perJob = 10, type = c("shell", "bsub", "qsub"), command = NULL,
-  requires = c(), sources = c(), code = "", bsub.W = "12:00",
-  bsub.n = 1, bsub.mem = 1000, bsub.other = "", qsub.q = "sc02.q",
-  sleep.every = 50, sleep.secs = 300)
+  table.name = "NULL", ids = NULL, params = "",
+  paramsEvalAtCall = "", perJob = 10, type = c("shell", "bsub",
+  "qsub"), command = NULL, requires = c(), sources = c(),
+  code = "", bsub.W = "12:00", bsub.n = 1, bsub.mem = 1000,
+  bsub.other = "", qsub.q = "sc02.q", sleep.every = 50,
+  sleep.secs = 300)
 }
 \arguments{
 \item{f}{a character or a function object called on each line of benchdata.}
@@ -77,6 +78,10 @@ job-submissions}
 a character vector containing the generated shell commands 
 (see details).
 }
+\description{
+Parallelize a benchmark on data.table by calling benchmark on equal subsets 
+of its lines.
+}
 \details{
 This function generates two files: 
 1. an R-script, j_<script.file>_.R, which exctracts table.file and 
@@ -85,4 +90,3 @@ benchmark executing f on those lines;
 2. a shell script, j_<type>_<script.file>.sh of commands for starting an R 
 process and executing the R-script on specific lines of the data.table.
 }
-

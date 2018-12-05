@@ -5,8 +5,8 @@
 \title{Apply a function to each row of a data.table and add the result as a column}
 \usage{
 benchmark(f, benchdata, fname = NULL, table.file = NULL,
-  report = function(p, obj) { }, result.only = F, id.result.only = F,
-  paramsEvalAtCall = "", ...)
+  report = function(p, obj) { }, result.only = FALSE,
+  id.result.only = FALSE, paramsEvalAtCall = "", ...)
 }
 \arguments{
 \item{f}{a character or a function object}
@@ -43,4 +43,6 @@ already exists, it is overwritten. If the parameter id.result.only is FALSE (def
 are also contained in the returned data.table. Otherwise only the columns id, and fname are returned. If result.only
 is TRUE, than only a list of the resulting objects for each row of the original data.table is returned.
 }
-
+\description{
+Apply a function to each row of a data.table and add the result as a column
+}

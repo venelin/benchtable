@@ -6,7 +6,9 @@
 \usage{
 doBenchJob(fname, f, table.file, table.name, ids, ...)
 }
+\description{
+Extract command-line arguments specifying a call to benchmark.
+}
 \note{
 This is an internal function
 }
-

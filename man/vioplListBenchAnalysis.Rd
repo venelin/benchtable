@@ -7,10 +7,9 @@
 vioplListBenchAnalysis(lS, colors = c("blue", "red", "green", "brown",
   "violet", "orange", "darkgreen"), ylim = c(0, 0), outliers = T,
   abl = NULL, xlabels = F, title = NULL, legend = F,
-  legPos = "topleft", legTexts = NULL, boxwex = 0.15, mgp = c(1.5, 0.5,
-  0), grid = T, xlab = "", ylab = "", txt = "", ...)
+  legPos = "topleft", legTexts = NULL, boxwex = 0.15, mgp = c(1.5,
+  0.5, 0), grid = T, xlab = "", ylab = "", txt = "", ...)
 }
 \description{
 Violin plot for a list of benchdata analysis
 }
-

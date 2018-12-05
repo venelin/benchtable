@@ -20,4 +20,3 @@ a named list of matrices suitable for bplListBenchAnalysis and vioplListBenchAna
 \description{
 transpose an into a list of S matrices of length(levels) columns
 }
-

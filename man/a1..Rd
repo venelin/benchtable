@@ -17,4 +17,3 @@ eval(substitute(apply(xx, 1, function(.) expr)), list(xx=x))
 \description{
 Shortcut for apply(x, 1, function(.) expr)
 }
-

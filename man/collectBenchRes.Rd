@@ -37,7 +37,9 @@ data.table to the file table.file, defaults to FALSE.}
 the resulting data.table object with added (or updated) columns for 
 each element of fs.
 }
+\description{
+Collect benchmark results from .RData files
+}
 \seealso{
 \code{\link{genBenchJobs}}
 }
-
