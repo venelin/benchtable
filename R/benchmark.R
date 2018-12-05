@@ -1,5 +1,3 @@
-library(data.table)
-
 #' @title Apply a function to each row of a data.table and add the result as a column
 #' 
 #' @param f a character or a function object
@@ -25,12 +23,15 @@ library(data.table)
 #' already exists, it is overwritten. If the parameter id.result.only is FALSE (default) all the remaining columns
 #' are also contained in the returned data.table. Otherwise only the columns id, and fname are returned. If result.only
 #' is TRUE, than only a list of the resulting objects for each row of the original data.table is returned.
-#' 
+#'
+#' @import data.table
 #' @export
-benchmark <- function(f, benchdata, fname=NULL, table.file=NULL, 
-                      report=function(p, obj) {}, result.only=F, id.result.only=F, 
+benchmark <- function(f, benchdata, 
+                      fname = NULL, table.file = NULL, 
+                      report=function(p, obj) {}, 
+                      result.only = FALSE, id.result.only = FALSE, 
                       paramsEvalAtCall='', ...) {
-  if(!is.null(paramsEvalAtCall)&paramsEvalAtCall!='') {
+  if(!is.null(paramsEvalAtCall) & paramsEvalAtCall!='') {
     paramsEvalAtCall <- paste0('list(', paramsEvalAtCall, ')')
   }
   addParam <- list(...)
@@ -106,25 +107,39 @@ benchmark <- function(f, benchdata, fname=NULL, table.file=NULL,
 #' @title Extract command-line arguments specifying a call to benchmark. 
 #' @note This is an internal function
 #' @export
-doBenchJob <- function(fname, f, table.file, ids, ...) {
+doBenchJob <- function(fname, f, table.file, table.name, ids, ...) {
   cat('Executing ', f, ' on ', table.file, 
       ', ids: ', do.call(paste, as.list(ids)), '\n', sep='')
   
   newEnv <- new.env()
   load(table.file, envir=newEnv)
-  benchdata.name <- tables(env=newEnv)[1,NAME]
+  if(is.null(table.name) | table.name=='NULL') {
+    benchdata.name <- tables(env=newEnv)[1,NAME]
+  } else {
+    benchdata.name <- table.name
+  }
+  
 
   cat('Found data.table object:', benchdata.name, '\n')
   benchdata <- get(benchdata.name, envir=newEnv)
   
   ..ids.. <- ids
   b <- benchdata[id %in% ..ids..]
+  
+  print('Cleaning unused tables...')
+  rm(list=tables(env=newEnv)[,NAME], envir=newEnv)
+  rm(benchdata)
+  
+  print('Calling gc() before execution...')
+  
+  print(tables(env=newEnv))
+  print(gc())
+  
+  
   print('Executing job on the following part of the data.table:')
   print(b)
   
-  rm(list=benchdata.name, envir=newEnv)
-  
-  b <- benchmark(f, b, fname, NULL, id.result.only=T, ...)
+  b <- benchmark(f, b, fname, NULL, id.result.only=TRUE, ...)
   save(b, file=paste0('job_', fname, '_', ids[1], '_.RData'))
   b
 }
@@ -164,6 +179,8 @@ doBenchJob <- function(fname, f, table.file, ids, ...) {
 #' defaults to 1.
 #' @param bsub.mem an integer indicating number of megabites used by a job if
 #' type = 'bsub', defaults to 1000.
+#' @param bsub.other Character containing other options of bsub to be
+#'  written first.
 #' @param qsub.q a character indicating queuename if type='qsub', defaults to 
 #' 'sc02.q'
 #' @param sleep.every integer, number of job-submit commands between a sleep 
@@ -181,20 +198,23 @@ doBenchJob <- function(fname, f, table.file, ids, ...) {
 #' 
 #' @export
 #' 
-genBenchJobs <- function(f, fname=NULL, script.file=fname, table.file, ids=NULL, 
+genBenchJobs <- function(f, fname=NULL, script.file=fname, 
+                         table.file, table.name="NULL",
+                         ids=NULL, 
                          params='', paramsEvalAtCall='',
                          perJob=10, 
                          type=c('shell', 'bsub', 'qsub'), command=NULL,
                          requires=c(), sources=c(), code="",
                          bsub.W='12:00', bsub.n=1, bsub.mem=1000, 
+                         bsub.other = "",
                          qsub.q='sc02.q', 
                          sleep.every=50, sleep.secs=300) {
   
   jobCommand <- function(type, name='', 
-                         bsub.W='', bsub.n='', bsub.mem='', 
+                         bsub.W='', bsub.n='', bsub.mem='', bsub.other='', 
                          qsub.q='') {
     c(shell='sh -c', 
-      bsub=paste('bsub -W ', bsub.W, ' -n ', bsub.n, 
+      bsub=paste('bsub ', bsub.other, ' -W ', bsub.W, ' -n ', bsub.n, 
                  ' -R "rusage[mem=', bsub.mem, ']"', ' -J ', name, ' ', sep=''), 
       qsub=paste('qsub -V -cwd ', '-N ', name, ' -q ', qsub.q, 
                  ' -b y -shell y ',  sep='') )[type]
@@ -218,7 +238,13 @@ genBenchJobs <- function(f, fname=NULL, script.file=fname, table.file, ids=NULL,
   if(is.null(ids)) {
     newEnv <- new.env()
     load(table.file, envir=newEnv)
-    benchdata.name <- tables(env=newEnv)[1,NAME]
+    if(is.null(table.name)|table.name=='NULL') {
+      table.name <- 'NULL'
+      benchdata.name <- tables(env=newEnv)[1,NAME]
+    } else {
+      benchdata.name <- table.name
+    }
+    
     ids <- get(benchdata.name, envir=newEnv)[, id]
   }
   
@@ -256,11 +282,15 @@ genBenchJobs <- function(f, fname=NULL, script.file=fname, table.file, ids=NULL,
 'args <- commandArgs(trailingOnly = TRUE)
 f <- as.character(args[1])
 table.file <- as.character(args[2])
-ids <- as.integer(args[-(1:2)])
+table.name <- as.character(args[3])
+ids <- as.integer(args[-(1:3)])
 '
   
   rscript <- paste0(reqs, src, '\n#user code \n', code, '\n# end of user code\n', 
-                    args, 'b <- doBenchJob(fname="', fname, '", f, table.file, ids', paramsEvalAtCall, params, ')\n')
+                    args, 
+                    'b <- doBenchJob(fname="', fname, '", ', 
+                    'f=f, table.file=table.file, table.name=table.name, ids=ids', 
+                    paramsEvalAtCall, params, ')\n')
   rscriptFile <- paste('j_', script.file, '.R', sep='')
   write(rscript, file=rscriptFile)
   
@@ -269,11 +299,12 @@ ids <- as.integer(args[-(1:2)])
     id <- sort(id)
     if(is.null(command)) {
       command <- jobCommand(type[1], paste('j_', id[1], '_', fname, sep=''),
-                            bsub.W, bsub.n, bsub.mem, qsub.q)
+                            bsub.W, bsub.n, bsub.mem, bsub.other, qsub.q)
     }
     
     paste(command, "'", "R --vanilla --slave", "-f", rscriptFile, 
-          "--args", charf, table.file, do.call(paste, as.list(id)), "'", backgr, "\n")
+          "--args", charf, table.file, table.name, 
+          do.call(paste, as.list(id)), "'", backgr, "\n")
   })
   
   sleeps <- rep('', length(cmd))
@@ -310,6 +341,7 @@ ids <- as.integer(args[-(1:2)])
 #' @return the resulting data.table object with added (or updated) columns for 
 #' each element of fs.
 #' @seealso \code{\link{genBenchJobs}}
+#' @import data.table
 #' @export
 collectBenchRes <- function(fs, benchdata=NULL, table.file=NULL, ids=NULL,
                             res.ids.only=T, dir.res='.', write.file=F, verbose=F) {
@@ -430,7 +462,7 @@ cleanBenchRes <- function(f) {
 #' @param i a single integer specifying the id of a line
 #' @return a named list of objects found in the columns of benchdata at the 
 #'   specified line.
-#' 
+#' @import data.table
 #' @export
 getLineAsList <- function(benchdata, i) {
   as.list(t(benchdata[id==i])[,1])
