@@ -48,6 +48,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129563006-5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-129563006-5');
+</script>
+
   </head>
 
   <body>
@@ -120,9 +130,9 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>l1, </th>
-      <td><p>l2, ... two or more vector or list objects. A data.frame is constructed from these
-by data.frame(l1, l2, ...).</p></td>
+      <th>l1, l2, ...</th>
+      <td><p>two or more vector or list objects. A data.frame is constructed
+from these by `data.frame(l1, l2, ...)`.</p></td>
     </tr>
     <tr>
       <th>expr</th>

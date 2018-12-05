@@ -48,6 +48,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129563006-5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-129563006-5');
+</script>
+
   </head>
 
   <body>
@@ -131,6 +141,10 @@ benchdata</p></td>
     <tr>
       <th>what</th>
       <td><p>a function(row) returning a list of statistics for a row of benchdata</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional arguments passed to apply</p></td>
     </tr>
     </table>
     

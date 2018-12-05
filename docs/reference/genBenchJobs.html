@@ -51,6 +51,16 @@ of its lines." />
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129563006-5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-129563006-5');
+</script>
+
   </head>
 
   <body>
@@ -147,6 +157,11 @@ generated scripts:</p></td>
       <th>table.file</th>
       <td><p>a character indicating the name of a .RData file containing
 a data.table object.</p></td>
+    </tr>
+    <tr>
+      <th>table.name</th>
+      <td><p>a character string indicating the name of the data.table
+variable found in `table.file`.</p></td>
     </tr>
     <tr>
       <th>ids</th>
