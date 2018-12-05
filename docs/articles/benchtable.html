@@ -144,7 +144,7 @@ dt &lt;-<span class="st"> </span><span class="kw">data.table</span>(<span class=
 }
 <span class="co"># execute gen.x for every row p of dt and store the result in a column called 'x'</span>
 dt &lt;-<span class="st"> </span><span class="kw"><a href="../reference/benchmark.html">benchmark</a></span>(gen.x, dt, <span class="dt">fname=</span><span class="st">'x'</span>) </code></pre></div>
-<pre><code>## Fitting time: 0.038 s</code></pre>
+<pre><code>## Fitting time: 0.041 s</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gen.y &lt;-<span class="st"> </span><span class="cf">function</span>(p) {
   p[[<span class="st">'A'</span>]]<span class="op">+</span>p[[<span class="st">'x'</span>]]<span class="op">*</span>p[[<span class="st">'B'</span>]]<span class="op">+</span><span class="kw">rnorm</span>(p[[<span class="st">'N'</span>]], <span class="dt">sd=</span>p[[<span class="st">'Epsilon'</span>]])
 }
@@ -185,7 +185,7 @@ lmFit &lt;-<span class="st"> </span><span class="cf">function</span>(p, ...) {
 <p>We save the above function to a file ‘lmFit.R’ as, later on, we are going to run it in parallel on the cluster.</p>
 <p>Now we call <code><a href="../reference/benchmark.html">benchmark()</a></code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dt &lt;-<span class="st"> </span><span class="kw"><a href="../reference/benchmark.html">benchmark</a></span>(lmFit, dt)</code></pre></div>
-<pre><code>## Fitting time: 0.115 s</code></pre>
+<pre><code>## Fitting time: 0.12 s</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(dt, <span class="dt">digits=</span><span class="dv">1</span>)</code></pre></div>
 <pre><code>##       id   N   A   B Epsilon                           x
 ##   1:   1  10 0.5 0.8     0.1 0.3,0.4,0.6,0.9,0.2,0.9,...
