@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 [![Travis build status](https://travis-ci.org/venelin/benchtable.svg?branch=master)](https://travis-ci.org/venelin/benchtable)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/benchtable?color=blue)](https://cran.r-project.org/package=benchtable)
+[![DOI](https://zenodo.org/badge/160479895.svg)](https://zenodo.org/badge/latestdoi/160479895)
 
 # benchtable
 
